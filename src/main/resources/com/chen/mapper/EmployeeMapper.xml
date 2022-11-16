@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	mapper: 根元素  sql配置文件的根元素只能是 mapper
+	namespace :命名空间	
+				告诉项目 通过什么路径能够找到我们的mapper文件		
+ -->
+<mapper namespace="com.chen.mapper.EmployeeMapper">
+    <cache />  <!--开启二级缓存-->
+
+    <!-- 多对一嵌套结果查询(内连查询) -->
+    <resultMap id="baseResultMap" type="com.chen.domain.EmployeeManyToOne">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+        <association property="dept" javaType="com.chen.domain.DepartmentManyToOne">
+            <id property="id" column="d_id"/>
+            <result property="name" column="d_name"/>
+        </association>
+    </resultMap>
+
+    <select id="selectAllManyToOne" resultMap="baseResultMap">
+        select e.id, e.name,e.age,e.dept_id did,d.id d_id,d.name d_name
+        from t_emp e join t_dept d on d.id=e.dept_id
+    </select>
+
+    <!-- 多对一嵌套查询(子查询) -->
+    <resultMap id="nestResultMap" type="com.chen.domain.EmployeeManyToOne">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="age" column="age"/>
+        <association property="dept"
+                     column="dept_id"
+                     javaType="com.chen.domain.DepartmentManyToOne"
+                     select="com.chen.mapper.DepartmentMapper.selectByDid"/>
+    </resultMap>
+
+    <select id="queryAllManyToOne" resultMap="nestResultMap">
+        select id,name,age,dept_id from t_emp
+    </select>
+
+    <!-- 多对一 保存插入 -->
+    <insert id="insertEmp" parameterType="com.chen.domain.EmployeeManyToOne">
+        insert into t_emp(`name`, age, dept_id)value (#{name},#{age},#{dept.id})
+    </insert>
+
+    <!-- 多对一 修改 -->
+    <update id="updateById" parameterType="com.chen.domain.EmployeeManyToOne">
+        update t_emp
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name}
+            </if>
+            <if test="dept != null and dept.id != null">
+                dept_id = #{dept.id}
+            </if>
+        </set>
+        <where>
+            id=#{id}
+        </where>
+    </update>
+
+    <!-- 多对一 删除 -->
+    <delete id="deleteById">
+        delete from t_emp where id=#{id}
+    </delete>
+
+    <!-- 嵌套查询(子查询) 一对多 -->
+    <select id="selectById" resultType="com.chen.domain.EmployeeOneTwoMany">
+        select id,name,age from t_emp where dept_id=#{dept_id}
+    </select>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	mapper: 根元素  sql配置文件的根元素只能是 mapper
+	namespace :命名空间	
+				告诉项目 通过什么路径能够找到我们的mapper文件		
+ -->
+<mapper namespace="com.chen.mapper.DepartmentMapper">
+    <cache />  <!--开启二级缓存-->
+
+    <!-- 嵌套查询 的嵌套语句 -->
+    <select id="selectByDid" resultType="com.chen.domain.DepartmentManyToOne">
+        select id,`name` from t_dept where id=#{id}
+    </select>
+
+    <!--多对一 保存插入-->
+    <insert id="insertDept" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into t_dept(`name`) value (#{name})
+    </insert>
+
+
+
+
+    <!-- 嵌套结果查询(内连查询) 一对多 -->
+    <resultMap id="baseResultMap" type="com.chen.domain.DepartmentOneToMany">
+        <id property="id" column="did"/>
+        <result property="name" column="dname"/>
+        <collection property="emps" ofType="com.chen.domain.EmployeeOneTwoMany">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="age" column="age"/>
+        </collection>
+    </resultMap>
+    <select id="selectAll" resultMap="baseResultMap">
+        select
+               d.id did,
+               d.name dname,
+               e.id,
+               e.name,
+               e.age
+        from t_dept d
+        left join t_emp e on d.id=e.dept_id
+    </select>
+
+    <!-- 嵌套查询(子查询) 一对多 -->
+    <resultMap id="nestResultMap" type="com.chen.domain.DepartmentOneToMany">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <collection property="emps"
+                    column="id"
+                    ofType="com.chen.domain.EmployeeOneTwoMany"
+                    select="com.chen.mapper.EmployeeMapper.selectById"/>
+    </resultMap>
+    <select id="queryAll" resultMap="nestResultMap">
+        select id,name from t_dept
+    </select>
+</mapper>

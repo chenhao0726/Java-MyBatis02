@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!--根元素，里面就是Mybatis配置-->
+<configuration>
+    <!-- 环境配置：数据库的配置环境(怎么连接数据库) ，
+        可以配置多个环境对象 environment，多个数据库的连接配置，
+        可以通过  default="development" 来切换默认的环境 -->
+    <properties resource="jdbc.properties"/>
+    <settings>
+        <!--延迟加载总开关  true 开启延迟加载  false关闭延迟加载，即关联查询的时候会立刻查询关联对象-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--侵入式延迟加载开关：
+        侵入式延迟： 执行对主加载对象的查询时，
+            不会执行对关联对象的查询。
+            但当要访问主加载对象的详情属性时，
+            就会马上执行关联对象的select查询
+        默认是false
+        查询主加载对象的任何属性时，都要执行关联对象的查询-->
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <!-- lazyLoadTriggerMethods：指定对象的方法触发一次延迟加载。
+            默认值：equals() clone() hashCode() ) toString()
+         -->
+        <setting name="lazyLoadTriggerMethods" value=""/>
+        <!--开启二级缓存-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+    <!-- 对象设置别名 -->
+    <typeAliases>
+        <package name="com.chen.domain"/>
+    </typeAliases>
+    <environments default="development">
+        <environment id="development">
+            <!-- 事务管理器，type="JDBC"使用JDBC的事务管理 "JdbcTransaction"  -->
+            <transactionManager type="JDBC"/>
+            <!-- 数据源配置 POOLED 连接池，对应 PooledDataSource-->
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="com/chen/mapper/UserMapper.xml"/>
+        <mapper resource="com/chen/mapper/EmployeeMapper.xml"/>
+        <mapper resource="com/chen/mapper/DepartmentMapper.xml"/>
+    </mappers>
+</configuration>

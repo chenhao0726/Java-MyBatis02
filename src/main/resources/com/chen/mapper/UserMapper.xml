@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+	mapper: 根元素  sql配置文件的根元素只能是 mapper
+	namespace :命名空间	
+				告诉项目 通过什么路径能够找到我们的mapper文件		
+ -->
+<mapper namespace="com.chen.mapper.UserMapper">
+    <!--
+		select:表示查询语句
+		id :  是这个sql的唯一标识 一般和mapper中的方法名一致
+		parameterType: 参数的类型
+		resultType: 返回值类型
+		怎么找到对应的sql语句
+		namespace + id
+	 -->
+    <select id="selectById" parameterType="long" resultType="user">
+        select id,`name`,`password`,gender,age,permissions_id from t_user where id=#{id}
+    </select>
+
+    <select id="selectAll" resultType="user">
+        select id,`name`,`password`,gender,age,permissions_id from t_user
+    </select>
+
+    <sql id="filed">
+        id,`name`,`password`,gender,age,permissions_id
+    </sql>
+
+    <select id="mappingSelectById" parameterType="long" resultType="user">
+        select
+            <include refid="filed"/>
+        from t_user where id=#{id}
+    </select>
+    <select id="mappingSelectAll" resultType="user">
+        select
+        <include refid="filed"/>
+        from t_user
+    </select>
+    <!-- 高级查询和动态SQL查询 -->
+    <sql id="queryWhere">
+        <where>
+<!--            <if test="keyword != null and keyword !=''">-->
+<!--                (`name` like concat('%',#{keyword},'%') or password like concat('%',#{keyword},'%'))-->
+<!--            </if>-->
+            <if test="keyword != null and keyword != ''">
+                `name` like concat('%',#{keyword},'%')
+            </if>
+            <if test="gender != null">
+                and gender=#{gender}
+            </if>
+            <if test="max != null">
+                and age <![CDATA[ <= ]]> #{max}
+            </if>
+            <if test="min != null">
+                and age <![CDATA[ >= ]]> #{min}
+            </if>
+        </where>
+    </sql>
+    <select id="queryAll" parameterType="com.chen.query.UserQuery" resultType="com.chen.domain.User">
+        select
+            <include refid="filed"/>
+        from t_user
+            <include refid="queryWhere"/>
+    </select>
+
+    <!--insert into t_user(`name`,`password`,`gender`,`age`)VALUES( 'zs','123', 1, 1 ),( 'zs', '123', 1, 1 ),( 'zs', '123', 1, 1 ); 批量操作list中默认的collection 的名字就是list -->
+
+    <insert parameterType="list" id="batchSave">
+        insert into t_user(`name`,`password`,gender,age) values
+        <foreach separator="," item="u" collection="list">
+            (#{u.name},#{u.password},#{u.gender},#{u.age})
+        </foreach>
+    </insert>
+
+    <delete parameterType="list" id="batchDelete">
+        delete from t_user where id in
+        <foreach separator="," item="id" collection="list" close=")" open="(">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
